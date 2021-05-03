@@ -1,0 +1,44 @@
+version: '3'
+
+services: 
+    db:
+        image: mysql:8.0.24
+        container_name: db
+        volumes:
+            - "${PWD}/mysql/dbdata/:/var/lib/mysql/"
+            - "${PWD}/mysql/sql/:/docker-entrypoint-initdb.d/"
+            - "${PWD}/mysql/cnf/:/etc/mysql/conf.d/"
+        environment: 
+            - MYSQL_ROOT_PASSWORD=root
+            - MYSQL_DATABASE=fpadb
+        command: --default-authentication-plugin=mysql_native_password
+        networks: 
+            - NodeJS-MySQL
+    nodejs:
+        build: ./nodejs
+        container_name: nodejs
+        entrypoint: dockerize -wait tcp://db:3306 -timeout 20s
+        command: ["node", "main.js"]
+        networks: 
+            - NodeJS-MySQL
+            - NGINX-NodeJS
+        depends_on: 
+            - db
+    nginx:
+        build: ./nginx
+        container_name: nginx
+        entrypoint: dockerize -wait tcp://nodejs:3000 -timeout 20s
+        command: ["nginx", "-g", "daemon off;"]
+        restart: always
+        ports: 
+            - 8000:80
+        networks: 
+            - NGINX-NodeJS
+        depends_on: 
+            - nodejs
+
+networks: 
+    NodeJS-MySQL:
+        driver: bridge
+    NGINX-NodeJS:
+        driver: bridge
