@@ -1,4 +1,4 @@
-## Desafio Programa de Aceleração Full Cycle 2.0 - Docker Compose
+## Desafio Programa de Aceleração Full Cycle 2.0 (PFA) - Docker Compose
 
 ### Instruções:
 
